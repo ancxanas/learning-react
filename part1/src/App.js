@@ -1,20 +1,21 @@
-const Hello = ({ name, age }) => {
-  console.log(name, age);
-  const bornYear = () => new Date().getFullYear() - age;
+import { useState } from 'react';
+
+const App = () => {
+  const [value, setValue] = useState(10);
+
+  const setToValue = (newValue) => {
+    console.log('value now', newValue);
+    setValue(newValue);
+  };
 
   return (
-    <>
-      <p>
-        Hello {name}, you are {age} years old.
-      </p>
-      <p>So you were probably born in {bornYear()}</p>
-    </>
+    <div>
+      {value}
+      <button onClick={() => setToValue(1000)}>thousand</button>
+      <button onClick={() => setToValue(0)}>reset</button>
+      <button onClick={() => setToValue(value + 1)}>increment</button>
+    </div>
   );
-};
-
-const App = (props) => {
-  const { counter } = props;
-  return <div>{counter}</div>;
 };
 
 export default App;
