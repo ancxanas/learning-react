@@ -13,7 +13,7 @@
     "logs:prod": "fly logs",
     "lint": "eslint ."
   },
-  "author": "Matti Luukkainen",
+  "author": "Muhammed Anas",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
