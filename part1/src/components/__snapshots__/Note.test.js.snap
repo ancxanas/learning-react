@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders content 1`] = `
+<li
+  class="note"
+>
+  Your awesome note: 
+  Component testing is done with react-testing-library
+  <button>
+    make important
+  </button>
+</li>
+`;

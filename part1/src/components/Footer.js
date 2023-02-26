@@ -11,7 +11,7 @@ const Footer = () => {
     <div>
       <br />
       <em style={footerStyle}>
-        Note app, Department of Computer Science, University of Helsinki 2002
+        Note app, Department of Computer Science, University of Helsinki 2023
       </em>
     </div>
   )
