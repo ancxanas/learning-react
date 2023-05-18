@@ -1,33 +1,37 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
 
-const { v1: uuid } = require('uuid')
+const mongoose = require('mongoose')
+mongoose.set('strictQuery', false)
+const Person = require('./models/person')
 const { GraphQLError } = require('graphql')
 
-let persons = [
-  {
-    name: 'Arto Hellas',
-    phone: '040-123456',
-    street: 'Tapiolankatu 5 A',
-    city: 'Esposo',
-    id: '3d594650-3436-11e9-bc57-8b80ba54c431',
-  },
-  {
-    name: 'Matti Luukkainen',
-    phone: '040-432342',
-    street: 'Malminkaari 10 A',
-    city: 'Helsinki',
-    id: '3d599470-3436-11e9-bc57-8b80ba54c431',
-  },
-  {
-    name: 'Venla Ruuska',
-    street: 'Nallemäentie 22 C',
-    city: 'Helsinki',
-    id: '3d599471-3436-11e9-bc57-8b80ba54c431',
-  },
-]
+require('dotenv').config()
+
+const MONGODB_URI = process.env.MONGODB_URI
+
+console.log('connecting to', MONGODB_URI)
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log('connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('error connection to MongoDB', error.message)
+  })
 
 const typeDefs = `
+    type User {
+      username: String!
+      friends: [Person!]!
+      id: ID!
+    }
+
+    type Token {
+      value: String!
+    }
+
     type Mutation {
       addPerson(
         name: String!
@@ -39,14 +43,21 @@ const typeDefs = `
         name: String!
         phone: String!
       ): Person
+      createUser(
+        username: String!
+      ): User
+      login(
+        username: String!
+        password: String!
+      ): Token
     }
 
     type Address {
       city: String! 
       street: String!
     }
-
     type Person {
+
       name: String!
       phone: String
       address: Address!
@@ -62,21 +73,21 @@ const typeDefs = `
       personCount: Int!
       allPersons(phone: YesNo): [Person!]!
       findPerson(name: String!): Person
+      me: User
     }
 `
 
 const resolvers = {
   Query: {
-    personCount: () => persons.length,
+    personCount: () => async () => Person.collection.countDocuments(),
     allPersons: (root, args) => {
       if (!args.phone) {
-        return persons
+        return Person.find({})
       }
-      const byPhone = (person) =>
-        args.phone === 'YES' ? person.phone : !person.phone
-      return persons.filter(byPhone)
+
+      return Person.find({ phone: { $exists: args.phone === 'YES' } })
     },
-    findPerson: (root, args) => persons.find((p) => p.name === args.name),
+    findPerson: (root, args) => Person.findOne({ name: args.name }),
   },
   Person: {
     address: (root) => {
@@ -87,29 +98,40 @@ const resolvers = {
     },
   },
   Mutation: {
-    addPerson: (root, args) => {
-      if (persons.find((p) => p.name === args.name)) {
-        throw new GraphQLError('Name must be unique', {
+    addPerson: async (root, args) => {
+      const person = new Person({ ...args })
+
+      try {
+        await person.save()
+      } catch (error) {
+        throw new GraphQLError('Saving person failed', {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.name,
+            error,
           },
         })
       }
 
-      const person = { ...args, id: uuid() }
-      persons = persons.concat(person)
       return person
     },
-    editNumber: (root, args) => {
-      const person = persons.find((p) => p.name === args.name)
-      if (!person) {
-        return null
+    editNumber: async (root, args) => {
+      const person = await Person.findOne({ name: args.name })
+      person.phone = args.phone
+
+      try {
+        await person.save()
+      } catch (error) {
+        throw new GraphQLError('Saving number failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.name,
+            error,
+          },
+        })
       }
 
-      const updatedPerson = { ...person, phone: args.phone }
-      persons = persons.map((p) => (p.name === args.name ? updatedPerson : p))
-      return updatedPerson
+      return person
     },
   },
 }
