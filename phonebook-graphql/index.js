@@ -80,6 +80,7 @@ const typeDefs = `
       allPersons(phone: YesNo): [Person!]!
       findPerson(name: String!): Person
       me: User
+      allUsers: [User!]!
     }
 `
 
@@ -97,6 +98,7 @@ const resolvers = {
     me: (root, args, context) => {
       return context.currentUser
     },
+    allUsers: async () => User.find({}),
   },
   Person: {
     address: (root) => {
