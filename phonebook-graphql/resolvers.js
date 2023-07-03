@@ -10,12 +10,13 @@ const resolvers = {
   Query: {
     personCount: async () => Person.collection.countDocuments(),
     allPersons: async (root, args) => {
-      console.log('Personfind')
       if (!args.phone) {
-        return Person.find({})
+        return Person.find({}).populate('friendOf')
       }
 
-      return Person.find({ phone: { $exists: args.phone === 'YES' } })
+      return Person.find({ phone: { $exists: args.phone === 'YES' } }).populate(
+        'friendOf'
+      )
     },
     findPerson: async (root, args) => Person.findOne({ name: args.name }),
     me: (root, args, context) => {

@@ -18,8 +18,14 @@ const schema = new mongoose.Schema({
   city: {
     type: String,
     required: true,
-    minLength: 3,
+    minLength: 5,
   },
+  friendOf: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
 })
 
 module.exports = mongoose.model('Person', schema)

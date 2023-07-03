@@ -5,7 +5,10 @@ export const ALL_PERSONS = gql`
     allPersons {
       name
       phone
-      id
+      address {
+        street
+        city
+      }
     }
   }
 `
@@ -41,4 +44,41 @@ export const EDIT_NUMBER = gql`
       id
     }
   }
+`
+
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      value
+    }
+  }
+`
+
+export const PERSON_DETAILS = gql`
+  fragment PersonDetails on Person {
+    name
+    phone
+    address {
+      street
+      city
+    }
+  }
+`
+
+export const FIND_PERSON = gql`
+  query findPersonByName($nameToSearch: String!) {
+    findPerson(name: $nameToSearch) {
+      ...PersonDetails
+    }
+  }
+  ${PERSON_DETAILS}
+`
+
+export const PERSON_ADDED = gql`
+  subscription {
+    personAdded {
+      ...personDetails
+    }
+  }
+  ${PERSON_DETAILS}
 `
