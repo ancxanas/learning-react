@@ -1,58 +1,44 @@
-import { CoursePart } from './types';
-
-const assertNever = (value: never): never => {
-  throw new Error(
-    `Unhandled discriminated union member: ${JSON.stringify(value)}`
-  );
-};
+import { useEffect, useState } from 'react';
+import { Note } from './types';
+import { getAllNotes, createNote } from './noteService';
 
 const App = () => {
-  const courseParts: CoursePart[] = [
-    {
-      name: 'Fundamentals',
-      exerciseCount: 10,
-      description: 'This is an awesome course part',
-      kind: 'basic',
-    },
-    {
-      name: 'Using props to pass data',
-      exerciseCount: 7,
-      groupProjectCount: 3,
-      kind: 'group',
-    },
-    {
-      name: 'Basics of type Narrowing',
-      exerciseCount: 7,
-      description: 'How to go from unknown to string',
-      kind: 'basic',
-    },
-    {
-      name: 'Deeper type usage',
-      exerciseCount: 14,
-      description: 'Confusing description',
-      backgroundMaterial:
-        'https://type-level-typescript.com/template-literal-types',
-      kind: 'background',
-    },
-  ];
+  const [newNote, setNewNote] = useState('');
+  const [notes, setNotes] = useState<Note[]>([]);
 
-  courseParts.forEach((part) => {
-    switch (part.kind) {
-      case 'basic':
-        console.log(part.name, part.description, part.exerciseCount);
-        break;
-      case 'background':
-        console.log(part.name, part.exerciseCount, part.backgroundMaterial);
-        break;
-      case 'group':
-        console.log(part.name, part.exerciseCount, part.groupProjectCount);
-        break;
-      default:
-        return assertNever(part);
-    }
-  });
+  useEffect(() => {
+    getAllNotes().then((data) => {
+      setNotes(data);
+    });
+  }, []);
 
-  return <div>Hello</div>;
+  const noteCreation = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+
+    createNote({ content: newNote }).then((data) => {
+      setNotes(notes.concat(data));
+    });
+
+    setNewNote('');
+  };
+
+  return (
+    <div>
+      <form onSubmit={noteCreation}>
+        <input
+          value={newNote}
+          onChange={(event) => setNewNote(event.target.value)}
+        />
+
+        <button type="submit">add</button>
+      </form>
+      <ul>
+        {notes.map((note) => (
+          <li key={note.id}>{note.content}</li>
+        ))}
+      </ul>
+    </div>
+  );
 };
 
 export default App;
