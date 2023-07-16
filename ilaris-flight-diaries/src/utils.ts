@@ -13,7 +13,7 @@ const toNewDiaryEntry = (object: unknown): NewDairyEntry => {
   ) {
     const newEntry: NewDairyEntry = {
       comment: parseComment(object.comment),
-      date: parseDate(object.comment),
+      date: parseDate(object.date),
       weather: parseWeather(object.weather),
       visibility: parseVisibility(object.visibility),
     };
@@ -41,7 +41,7 @@ const isDate = (date: string): boolean => {
 };
 
 const parseDate = (date: unknown): string => {
-  if (!isString(date) || isDate(date)) {
+  if (!isString(date) || !isDate(date)) {
     throw new Error('Incorrect or missing date: ' + date);
   }
 
